@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Color Sequence Challenge</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: #1a1a1a;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            color: #fff;
+            text-shadow: 0 0 10px #0ff;
+            margin-bottom: 20px;
+        }
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(2, 150px);
+            gap: 20px;
+        }
+        .block {
+            width: 150px;
+            height: 150px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            opacity: 0.7;
+        }
+        .block:hover {
+            transform: scale(1.05);
+        }
+        .block.active {
+            opacity: 1;
+            box-shadow: 0 0 20px currentColor;
+        }
+        #red { background: #ff4d4d; }
+        #blue { background: #4d79ff; }
+        #green { background: #4dff4d; }
+        #yellow { background: #ffff4d; }
+        #message {
+            margin-top: 20px;
+            color: #fff;
+            font-size: 24px;
+            text-shadow: 0 0 5px #0ff;
+        }
+    </style>
+</head>
+<body>
+<h1>Color Sequence Challenge</h1>
+<div id="game-board">
+    <div class="block" id="red" data-color="0"></div>
+    <div class="block" id="blue" data-color="1"></div>
+    <div class="block" id="green" data-color="2"></div>
+    <div class="block" id="yellow" data-color="3"></div>
+</div>
+<div id="message">Watch the sequence!</div>
+
+<script>
+    const blocks = document.querySelectorAll('.block');
+    const message = document.getElementById('message');
+    let sequence = [];
+    let playerSequence = [];
+    let level = 1;
+    let acceptingInput = false;
+
+    // Start the game
+    setTimeout(startRound, 1000);
+
+    // Add click listeners to blocks
+    blocks.forEach(block => {
+        block.addEventListener('click', () => {
+            if (!acceptingInput) return;
+            const color = parseInt(block.dataset.color);
+            playerSequence.push(color);
+            lightUp(block);
+            checkSequence();
+        });
+    });
+
+    function startRound() {
+        playerSequence = [];
+        acceptingInput = false;
+        message.textContent = `Level ${level}: Watch carefully!`;
+        sequence.push(Math.floor(Math.random() * 4)); // Add a random color (0-3)
+        playSequence();
+    }
+
+    function playSequence() {
+        let i = 0;
+        const interval = setInterval(() => {
+            if (i >= sequence.length) {
+                clearInterval(interval);
+                acceptingInput = true;
+                message.textContent = `Level ${level}: Your turn!`;
+                return;
+            }
+            const block = blocks[sequence[i]];
+            lightUp(block);
+            i++;
+        }, 800);
+    }
+
+    function lightUp(block) {
+        block.classList.add('active');
+        setTimeout(() => block.classList.remove('active'), 400);
+    }
+
+    function checkSequence() {
+        const currentStep = playerSequence.length - 1;
+        if (playerSequence[currentStep] !== sequence[currentStep]) {
+            message.textContent = `Game Over! Score: ${level - 1}`;
+            acceptingInput = false;
+            setTimeout(resetGame, 2000);
+            return;
+        }
+        if (playerSequence.length === sequence.length) {
+            level++;
+            message.textContent = `Great job! Next level...`;
+            setTimeout(startRound, 1000);
+        }
+    }
+
+    function resetGame() {
+        sequence = [];
+        level = 1;
+        message.textContent = `New game starting...`;
+        setTimeout(startRound, 1000);
+    }
+</script>
+</body>
+</html>
